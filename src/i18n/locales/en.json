@@ -190,5 +190,35 @@
     "terms": "Terms of Service",
     "copyright": "© 2025 Drishya. All rights reserved.",
     "made_in": "Made in India 🇮🇳"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "updated": "Last updated: January 2025",
+    "s1_title": "Information We Collect",
+    "s1_body": "When you fill in our contact form, we collect your name, WhatsApp number, city, and property details. This information is submitted directly to us via WhatsApp and is not stored on our servers.",
+    "s2_title": "How We Use It",
+    "s2_body": "Your details are used solely to respond to your enquiry, provide quotes, and deliver the services you request. We do not sell, rent, or share your information with third parties.",
+    "s3_title": "WhatsApp",
+    "s3_body": "Our contact form opens WhatsApp with your details pre-filled. By submitting, you consent to this message being sent via WhatsApp (Meta Platforms, Inc.). WhatsApp's own privacy policy applies to messages sent on their platform.",
+    "s4_title": "Cookies",
+    "s4_body": "We use only essential browser storage (localStorage) to remember your theme and language preference. No tracking cookies, no analytics.",
+    "s5_title": "Contact",
+    "s5_body": "For any privacy questions, message us on WhatsApp or email us at hello@drishyam.in"
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "updated": "Last updated: January 2025",
+    "s1_title": "Services",
+    "s1_body": "Drishya provides 3D virtual tours, VR experiences, and cinematic video production for real estate properties. All services are subject to a written agreement or WhatsApp confirmation before work begins.",
+    "s2_title": "Payment",
+    "s2_body": "50% advance payment is required before the capture visit. The remaining 50% is due before delivery of final assets. All prices are in INR. Custom projects require a signed scope document.",
+    "s3_title": "Revisions",
+    "s3_body": "Sparsha package includes 1 revision. Darshana and Sampurna packages include unlimited revisions within 30 days of delivery. Revisions are changes to colour grading, framing, or labels — not re-captures.",
+    "s4_title": "Hosting",
+    "s4_body": "Hosted links are active for the period specified in your package. After expiry, assets are archived for 60 days before deletion. Extended hosting is available at ₹3,000/year.",
+    "s5_title": "Cancellation",
+    "s5_body": "Cancellations before the capture visit receive a full refund of the advance. Cancellations after the visit forfeit the advance payment. Completed work is non-refundable.",
+    "s6_title": "Limitation of Liability",
+    "s6_body": "Drishya is not liable for delays caused by property access issues, adverse weather, or client unavailability. Our total liability is limited to the amount paid for the specific project."
   }
 }
