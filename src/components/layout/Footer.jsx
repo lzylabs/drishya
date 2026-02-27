@@ -52,13 +52,13 @@ export default function Footer() {
             >
               {t('contact.direct_number')}
             </a>
-            <p className="text-xs text-[var(--text-3)] font-light mt-2">Guntur · Vijayawada · Amaravati</p>
+            <p className="text-xs text-[var(--text-3)] font-light mt-2">India · Serving nationwide</p>
           </div>
         </div>
 
         <div className="rule mb-6" />
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-          <p className="text-xs text-[var(--text-3)] font-light">© {year} Drishya. {t('footer.made_in')}</p>
+          <p className="text-xs text-[var(--text-3)] font-light">© {year} Drishya. All rights reserved.</p>
           <div className="flex gap-6">
             <a href="#" className="text-xs text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors font-light">{t('footer.privacy')}</a>
             <a href="#" className="text-xs text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors font-light">{t('footer.terms')}</a>

@@ -12,7 +12,7 @@ export default function LanguageToggle({ className = '' }) {
 
   return (
     <div className={`flex items-center gap-3 ${className}`}>
-      {[{ code: 'en', label: 'EN' }, { code: 'te', label: 'తె' }].map(({ code, label }) => (
+      {[{ code: 'en', label: 'EN' }, { code: 'te', label: 'తె' }, { code: 'hi', label: 'हि' }].map(({ code, label }) => (
         <button
           key={code}
           onClick={() => toggle(code)}

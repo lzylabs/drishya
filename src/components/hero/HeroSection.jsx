@@ -2,11 +2,8 @@ import { useRef, useEffect, useState, useCallback, lazy, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { buildWaLink } from '../ui/WhatsAppButton.jsx'
 import { useReducedMotion } from '../../hooks/useReducedMotion.js'
-
-gsap.registerPlugin(ScrollTrigger)
 
 const HeroScene = lazy(() => import('./HeroScene.jsx'))
 
@@ -21,44 +18,61 @@ export default function HeroSection() {
   const { t }         = useTranslation()
   const reducedMotion = useReducedMotion()
 
-  const trackRef  = useRef()
-
   // Mouse + click refs fed directly into CameraController (zero re-renders)
   const mouseRef  = useRef({ x: 0, y: 0 })
   const clickRef  = useRef({ theta: 0 })
 
-  // Scroll only drives the particle morph (completely separate from camera)
-  const [morphProgress, setMorphProgress] = useState(0)
   const [showHint, setShowHint] = useState(false)
-  const [webGL] = useState(() => hasWebGL())
+  const [webGL]   = useState(() => hasWebGL())
 
-  /* ── Scroll drives ONLY particle morph ──────────────────────── */
-  useEffect(() => {
-    if (!webGL || reducedMotion) return
-    const ctx = gsap.context(() => {
-      ScrollTrigger.create({
-        trigger: trackRef.current,
-        start: 'top top',
-        end:   'bottom bottom',
-        scrub: 1.2,
-        onUpdate(self) {
-          // Morph from config A → B in the 30–70% scroll window
-          setMorphProgress(Math.min(1, Math.max(0, (self.progress - 0.3) / 0.4)))
-        },
-      })
-    })
-    return () => ctx.revert()
-  }, [webGL, reducedMotion])
-
-  /* ── Mouse → camera (pure, no scroll interference) ──────────── */
+  /* ── Desktop mouse → camera ──────────────────────────────────── */
   useEffect(() => {
     if (reducedMotion) return
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+    if (isMobile) return
     const fn = (e) => {
       mouseRef.current.x = (e.clientX / window.innerWidth  - 0.5) * 2
       mouseRef.current.y = (e.clientY / window.innerHeight - 0.5) * 2
     }
     window.addEventListener('mousemove', fn, { passive: true })
     return () => window.removeEventListener('mousemove', fn)
+  }, [reducedMotion])
+
+  /* ── Mobile gyroscope → camera ───────────────────────────────── */
+  useEffect(() => {
+    if (reducedMotion) return
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+    if (!isMobile) return
+
+    const handleOrientation = (e) => {
+      // gamma: left/right tilt (-90 to 90)
+      // beta:  front/back tilt (-180 to 180); subtract 45 for typical viewing angle
+      const gamma = e.gamma || 0
+      const beta  = (e.beta  || 0) - 45
+      mouseRef.current.x = Math.max(-1, Math.min(1, gamma / 30))
+      mouseRef.current.y = Math.max(-1, Math.min(1, beta  / 30))
+    }
+
+    // iOS 13+ requires permission via user gesture
+    if (
+      typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function'
+    ) {
+      const requestGyro = async () => {
+        try {
+          const perm = await DeviceOrientationEvent.requestPermission()
+          if (perm === 'granted') {
+            window.addEventListener('deviceorientation', handleOrientation, { passive: true })
+          }
+        } catch (_) { /* permission denied / not supported */ }
+      }
+      // Trigger on first touch anywhere on page
+      document.addEventListener('touchstart', requestGyro, { once: true })
+    } else {
+      window.addEventListener('deviceorientation', handleOrientation, { passive: true })
+    }
+
+    return () => window.removeEventListener('deviceorientation', handleOrientation)
   }, [reducedMotion])
 
   /* ── Hint ─────────────────────────────────────────────────────── */
@@ -88,115 +102,109 @@ export default function HeroSection() {
   })
 
   return (
-    /* 300vh scroll track — scroll morphs the splat; camera stays mouse-only */
-    <section ref={trackRef} className="hero-track" aria-label="Drishya hero">
-      <div className="hero-sticky">
+    /* Single-viewport hero — scroll is fully free */
+    <section
+      style={{ height: '100dvh', position: 'relative', overflow: 'hidden' }}
+      aria-label="Drishya hero"
+    >
+      {/* Background */}
+      <div className="absolute inset-0" style={{ background: 'var(--hero-bg)' }} />
 
-        {/* Background */}
+      {/* 3D Gaussian Splat Canvas */}
+      {webGL && !reducedMotion ? (
+        <div className="absolute inset-0 cursor-default" onClick={handleClick}>
+          <Suspense fallback={null}>
+            <HeroScene
+              mouseRef={mouseRef}
+              clickRef={clickRef}
+            />
+          </Suspense>
+        </div>
+      ) : (
         <div className="absolute inset-0" style={{ background: 'var(--hero-bg)' }} />
+      )}
 
-        {/* 3D Gaussian Splat Canvas */}
-        {webGL && !reducedMotion ? (
-          <div className="absolute inset-0 cursor-none" onClick={handleClick}>
-            <Suspense fallback={null}>
-              <HeroScene
-                mouseRef={mouseRef}
-                clickRef={clickRef}
-                morphProgress={morphProgress}
-              />
-            </Suspense>
-          </div>
-        ) : (
-          <div className="absolute inset-0" style={{ background: 'var(--hero-bg)' }} />
-        )}
+      {/* Vignette — darker edges, bright centre */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 30%, var(--bg) 100%)' }}
+      />
 
-        {/* Vignette — darker edges, bright centre */}
-        <div
-          className="absolute inset-0 pointer-events-none"
-          style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 30%, var(--bg) 100%)' }}
-        />
+      {/* Text overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pointer-events-none">
+        <div className="text-center">
 
-        {/* Text overlay */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pointer-events-none">
-          <div className="text-center">
+          {/* Brand name in Cormorant */}
+          <motion.h1
+            {...fade(1)}
+            className="font-display font-light text-white"
+            style={{
+              fontSize: 'clamp(5rem, 14vw, 11rem)',
+              lineHeight: 0.95,
+              letterSpacing: '-0.02em',
+              textShadow: '0 0 80px rgba(255,255,255,0.06)',
+            }}
+          >
+            Drishya
+          </motion.h1>
 
-            {/* Location overline */}
-            <motion.p {...fade(0)} className="label text-white/40 mb-7 tracking-widest">
-              Guntur, Andhra Pradesh
-            </motion.p>
+          {/* Italic Telugu name */}
+          <motion.p
+            {...fade(2)}
+            className="font-display font-light italic text-white/30 mt-1"
+            style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)' }}
+          >
+            దృశ్య
+          </motion.p>
 
-            {/* Brand name in Cormorant */}
-            <motion.h1
-              {...fade(1)}
-              className="font-display font-light text-white"
-              style={{
-                fontSize: 'clamp(5rem, 14vw, 11rem)',
-                lineHeight: 0.95,
-                letterSpacing: '-0.02em',
-                textShadow: '0 0 80px rgba(255,255,255,0.06)',
-              }}
-            >
-              Drishya
-            </motion.h1>
+          {/* Tagline */}
+          <motion.p
+            {...fade(3)}
+            className="label text-white/35 mt-8 tracking-widest"
+          >
+            {t('brand.tagline')}
+          </motion.p>
 
-            {/* Italic Telugu name */}
-            <motion.p
-              {...fade(2)}
-              className="font-display font-light italic text-white/30 mt-1"
-              style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)' }}
-            >
-              దృశ్య
-            </motion.p>
-
-            {/* Tagline */}
-            <motion.p
-              {...fade(3)}
-              className="label text-white/35 mt-8 tracking-widest"
-            >
-              {t('brand.tagline')}
-            </motion.p>
-
-            {/* CTAs */}
-            <motion.div
-              {...fade(4)}
-              className="mt-12 flex flex-wrap items-center justify-center gap-8 pointer-events-auto"
-            >
-              <a
-                href="#portfolio"
-                className="label text-white/70 hover:text-white transition-colors pb-px border-b border-white/20 hover:border-white"
-              >
-                {t('hero.cta_primary')}
-              </a>
-              <span className="text-white/15 text-lg">|</span>
-              <a
-                href={buildWaLink(t('contact.whatsapp_pretext'))}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="label text-white/40 hover:text-white/70 transition-colors"
-              >
-                {t('hero.cta_secondary')}
-              </a>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Hint */}
-        <motion.p
-          className="absolute bottom-16 left-1/2 -translate-x-1/2 label text-white/25 whitespace-nowrap pointer-events-none"
-          animate={{ opacity: showHint ? 1 : 0 }}
-          transition={{ duration: 1 }}
-        >
-          {t('hero.click_hint')}
-        </motion.p>
-
-        {/* Scroll cue */}
-        <div className="absolute bottom-7 left-1/2 -translate-x-1/2 pointer-events-none">
+          {/* CTAs */}
           <motion.div
-            className="w-px h-8 bg-gradient-to-b from-white/30 to-transparent mx-auto"
-            animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.3, 0.7, 0.3] }}
-            transition={{ duration: 2.5, repeat: Infinity }}
-          />
+            {...fade(4)}
+            className="mt-12 flex flex-wrap items-center justify-center gap-8 pointer-events-auto"
+          >
+            <a
+              href="#gallery"
+              className="label text-white/70 hover:text-white transition-colors pb-px border-b border-white/20 hover:border-white"
+            >
+              {t('hero.cta_primary')}
+            </a>
+            <span className="text-white/15 text-lg">|</span>
+            <a
+              href={buildWaLink(t('contact.whatsapp_pretext'))}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="label text-white/40 hover:text-white/70 transition-colors"
+            >
+              {t('hero.cta_secondary')}
+            </a>
+          </motion.div>
         </div>
+      </div>
+
+      {/* Hint */}
+      <motion.p
+        className="absolute bottom-16 left-1/2 -translate-x-1/2 label text-white/25 whitespace-nowrap pointer-events-none"
+        animate={{ opacity: showHint ? 1 : 0 }}
+        transition={{ duration: 1 }}
+      >
+        {t('hero.click_hint')}
+      </motion.p>
+
+      {/* Scroll cue */}
+      <div className="absolute bottom-7 left-1/2 -translate-x-1/2 pointer-events-none">
+        <motion.div
+          className="w-px h-8 bg-gradient-to-b from-white/30 to-transparent mx-auto"
+          animate={{ scaleY: [0.4, 1, 0.4], opacity: [0.3, 0.7, 0.3] }}
+          transition={{ duration: 2.5, repeat: Infinity }}
+        />
       </div>
     </section>
   )

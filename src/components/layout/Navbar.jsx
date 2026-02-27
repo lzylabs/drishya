@@ -8,7 +8,7 @@ import useStore from '../../store/useStore.js'
 
 const links = [
   { key: 'nav.services',  href: '#services'  },
-  { key: 'nav.portfolio', href: '#portfolio' },
+  { key: 'nav.portfolio', href: '#gallery' },
   { key: 'nav.pricing',   href: '#pricing'   },
   { key: 'nav.contact',   href: '#contact'   },
 ]
@@ -40,7 +40,7 @@ export default function Navbar() {
             <span className="font-display font-light text-xl tracking-tight text-[var(--text)]">
               Drishya
             </span>
-            <span className="label hidden sm:block text-[var(--text-3)]">/ Guntur AP</span>
+            <span className="label hidden sm:block text-[var(--text-3)] italic font-display">దృశ్య</span>
           </a>
 
           {/* Desktop nav */}
