@@ -36,7 +36,7 @@ jobs:
         env:
           # Set VITE_BASE_PATH to '/your-repo-name/' when using project pages
           # Leave as '/' when using a custom domain (username.github.io)
-          VITE_BASE_PATH: /drishyam/
+          VITE_BASE_PATH: /drishya/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
