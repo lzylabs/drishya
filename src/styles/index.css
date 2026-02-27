@@ -1,0 +1,164 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─── CSS Custom Properties — Dark (default) ───────────────────────────── */
+:root {
+  --bg:          #000000;
+  --bg-2:        #0a0a0a;
+  --bg-3:        #111111;
+  --text:        #ffffff;
+  --text-2:      #888888;
+  --text-3:      #444444;
+  --line:        rgba(255,255,255,0.09);
+  --line-2:      rgba(255,255,255,0.18);
+  --hero-bg:     radial-gradient(ellipse at 50% 45%, #1a1a1a 0%, #000000 70%);
+}
+
+/* ─── Light Theme ────────────────────────────────────────────────────────── */
+html.light, [data-theme="light"] {
+  --bg:          #ffffff;
+  --bg-2:        #f9f9f9;
+  --bg-3:        #f2f2f2;
+  --text:        #000000;
+  --text-2:      #666666;
+  --text-3:      #aaaaaa;
+  --line:        rgba(0,0,0,0.08);
+  --line-2:      rgba(0,0,0,0.16);
+  --hero-bg:     radial-gradient(ellipse at 50% 45%, #e8e8e8 0%, #ffffff 70%);
+}
+
+/* ─── Base ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.65;
+  overflow-x: hidden;
+}
+
+/* Telugu */
+[lang="te"], .font-telugu {
+  font-family: 'Noto Sans Telugu', 'DM Sans', sans-serif;
+  font-weight: 300;
+}
+
+/* Display — Cormorant Garamond everywhere */
+h1, h2, h3 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 300;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+h4, h5, h6 {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.7rem;
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 1px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--text-3); }
+
+/* ─── Selection ──────────────────────────────────────────────────────────── */
+::selection { background: var(--text); color: var(--bg); }
+
+/* ─── Focus ──────────────────────────────────────────────────────────────── */
+:focus-visible {
+  outline: 1px solid var(--text);
+  outline-offset: 3px;
+}
+
+/* ─── Fluid Display Sizes ────────────────────────────────────────────────── */
+.text-d1 { font-size: clamp(3.5rem, 10vw, 9rem); }
+.text-d2 { font-size: clamp(2.5rem, 6vw, 5.5rem); }
+.text-d3 { font-size: clamp(1.8rem, 3.5vw, 3rem); }
+.text-d4 { font-size: clamp(1.2rem, 2vw, 1.8rem); }
+
+/* ─── Spacing ────────────────────────────────────────────────────────────── */
+.section {
+  padding-top:    clamp(6rem, 12vw, 10rem);
+  padding-bottom: clamp(6rem, 12vw, 10rem);
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1200px;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 5vw, 4rem);
+}
+
+/* ─── Hairline Rule ──────────────────────────────────────────────────────── */
+.rule { height: 1px; background: var(--line); }
+.rule-2 { height: 1px; background: var(--line-2); }
+
+/* ─── Label / Overline text ──────────────────────────────────────────────── */
+.label {
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-2);
+}
+
+/* ─── Reduced Motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  html { scroll-behavior: auto; }
+}
+
+/* ─── Projection / large screen ──────────────────────────────────────────── */
+@media (min-width: 1920px) { html { font-size: 18px; } }
+@media (min-width: 2560px) { html { font-size: 20px; } }
+
+/* ─── Hero canvas ────────────────────────────────────────────────────────── */
+.hero-track { position: relative; height: 300vh; }
+.hero-sticky {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+}
+.hero-sticky canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+/* ─── Form inputs ────────────────────────────────────────────────────────── */
+.input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--line-2);
+  padding: 0.75rem 0;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: var(--text);
+  transition: border-color 0.2s;
+  border-radius: 0;
+}
+.input:focus { outline: none; border-bottom-color: var(--text); }
+.input::placeholder { color: var(--text-3); }
+.input option { background: var(--bg-2); color: var(--text); }

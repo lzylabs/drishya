@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.DS_Store
+*.env
+.env.*
+# splat source files are too large for standard git — use Git LFS
+splat/*.ply
+splat/*.splat
+splat/*.ksplat
