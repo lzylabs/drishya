@@ -37,6 +37,10 @@ jobs:
           # Set VITE_BASE_PATH to '/your-repo-name/' when using project pages
           # Leave as '/' when using a custom domain (username.github.io)
           VITE_BASE_PATH: /drishya/
+          # Set to a publicly accessible .splat file URL to enable the real Gaussian Splat viewer.
+          # Leave empty to use the procedural particle simulation instead.
+          # Example: VITE_SPLAT_URL: https://pub-abc123.r2.dev/property.splat
+          VITE_SPLAT_URL: ''
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
