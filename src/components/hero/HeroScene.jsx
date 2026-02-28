@@ -1,32 +1,13 @@
-import { Suspense } from 'react'
+import { Suspense, useState, useEffect, useRef } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Splat } from '@react-three/drei'
-import SplatParticles from './SplatParticles.jsx'
+import SplatPointCloud from './SplatPointCloud.jsx'
+import SplatParticles  from './SplatParticles.jsx'
 import CameraController from './CameraController.jsx'
 import useStore from '../../store/useStore.js'
 
-/*
- * VITE_SPLAT_URL — set this to a publicly accessible .splat file URL.
- *
- * In development (.env.local):
- *   VITE_SPLAT_URL=https://your-cdn.com/property.splat
- *
- * In production (GitHub Actions → deploy.yml env block):
- *   VITE_SPLAT_URL: https://your-cdn.com/property.splat
- *
- * Capture pipeline:
- *   1. Shoot ~150-300 photos of the property with Luma AI / Polycam
- *   2. Let their cloud process it → download the .ply file
- *   3. Open https://playcanvas.com/supersplat/editor
- *   4. Import .ply → export as .splat (or .ksplat for streaming)
- *   5. Upload to Cloudflare R2 / AWS S3 / GitHub LFS
- *   6. Set the URL in the env variable above
- *
- * If VITE_SPLAT_URL is empty the hero falls back to the
- * SplatParticles procedural simulation.
- */
 const SPLAT_URL = import.meta.env.VITE_SPLAT_URL || ''
 
+/* ─── Particle counts (procedural fallback) ──────────────────────────────── */
 function getCount() {
   if (typeof window === 'undefined') return 20000
   if (window.innerWidth < 480)  return 8000
@@ -35,56 +16,127 @@ function getCount() {
   return 28000
 }
 
-/* Real Gaussian Splat — loaded from .splat file via drei */
-function RealSplat() {
-  return (
-    <Splat
-      src={SPLAT_URL}
-      /* alphaTest: discard splats below this opacity threshold (0–1) */
-      alphaTest={0.1}
-      /*
-       * chunkSize: number of splats streamed per chunk.
-       * Higher = faster load but more memory spikes.
-       * Lower = smoother progressive load.
-       */
-      chunkSize={25000}
-    />
-  )
+function getMaxPoints() {
+  if (typeof window === 'undefined') return 30000
+  if (window.innerWidth < 480)  return 20000
+  if (window.innerWidth < 768)  return 35000
+  if (window.innerWidth < 1024) return 55000
+  return 80000
 }
 
+/* ─── .splat binary parser ───────────────────────────────────────────────── */
+/*
+ * .splat format — 32 bytes per Gaussian:
+ *   bytes  0-11 : position xyz (3 × float32)
+ *   bytes 12-23 : scale    xyz (3 × float32)
+ *   bytes 24-27 : color   rgba (4 × uint8)
+ *   bytes 28-31 : rotation wxyz (4 × uint8)
+ *
+ * After sampling we:
+ *   1. Compute the cloud centroid
+ *   2. Subtract it so the cloud sits at world origin (camera always looks at 0,0,0)
+ *   3. Compute the scene radius so the camera can auto-fit
+ */
+function parseSplat(buffer, maxPoints) {
+  const u8  = new Uint8Array(buffer)
+  const f32 = new Float32Array(buffer)
+
+  const totalSplats = Math.floor(buffer.byteLength / 32)
+  const step        = Math.max(1, Math.floor(totalSplats / maxPoints))
+  const count       = Math.floor(totalSplats / step)
+
+  const positions = new Float32Array(count * 3)
+  const colors    = new Float32Array(count * 3)
+
+  // Pass 1 — read positions + colors, accumulate centroid
+  let cx = 0, cy = 0, cz = 0
+  for (let i = 0; i < count; i++) {
+    const si = i * step
+    const f  = si * 8          // float32 index
+    const b  = si * 32 + 24   // byte index for RGBA
+
+    const x = f32[f], y = f32[f + 1], z = f32[f + 2]
+    positions[i * 3]     = x
+    positions[i * 3 + 1] = y
+    positions[i * 3 + 2] = z
+    cx += x; cy += y; cz += z
+
+    colors[i * 3]     = u8[b]     / 255
+    colors[i * 3 + 1] = u8[b + 1] / 255
+    colors[i * 3 + 2] = u8[b + 2] / 255
+  }
+
+  cx /= count; cy /= count; cz /= count
+
+  // Pass 2 — centre the cloud at origin, compute radius
+  let radius = 0
+  for (let i = 0; i < count; i++) {
+    positions[i * 3]     -= cx
+    positions[i * 3 + 1] -= cy
+    positions[i * 3 + 2] -= cz
+    const x = positions[i * 3], y = positions[i * 3 + 1], z = positions[i * 3 + 2]
+    const d = Math.sqrt(x * x + y * y + z * z)
+    if (d > radius) radius = d
+  }
+
+  return { positions, colors, count, radius }
+}
+
+/* ─── Scene ──────────────────────────────────────────────────────────────── */
 export default function HeroScene({ mouseRef, clickRef }) {
   const { theme } = useStore()
+  const isDark = theme === 'dark'
 
-  /*
-   * depth: false  →  fine for particles (no depth conflicts)
-   * depth: true   →  required for correct splat rendering when using
-   *                  a real .splat file, so we switch it on when needed.
-   */
-  const useRealSplat = Boolean(SPLAT_URL)
+  const [splatData, setSplatData] = useState(null)
+
+  // Shared ref so CameraController can smoothly lerp to the right distance
+  // once the splat radius is known — avoids a prop re-render on load
+  const cameraRRef = useRef(5.5)
+
+  useEffect(() => {
+    if (!SPLAT_URL) return
+    let cancelled = false
+
+    fetch(SPLAT_URL)
+      .then(r => r.arrayBuffer())
+      .then(buf => {
+        if (cancelled) return
+        const data = parseSplat(buf, getMaxPoints())
+        // Target camera radius = 2.2× the scene radius for a comfortable framing
+        cameraRRef.current = data.radius * 1.0
+        setSplatData(data)
+      })
+      .catch(err => console.error('[HeroScene] splat fetch error:', err))
+
+    return () => { cancelled = true }
+  }, [])
+
+  // uSize scales with scene radius so points stay proportional regardless of
+  // how large or small the scan is (radius × 1.8, clamped 8–35)
+  const uSize = splatData
+    ? Math.max(18, Math.min(72, splatData.radius * 3.9))
+    : 20
 
   return (
     <Canvas
-      camera={{ position: [0, 0.5, 5.5], fov: 55, near: 0.1, far: 80 }}
+      camera={{ position: [0, 1, 5.5], fov: 55, near: 0.1, far: 1000 }}
       gl={{
-        antialias:          true,
-        alpha:              true,
-        powerPreference:    'high-performance',
-        stencil:            false,
-        depth:              useRealSplat,   // splats need depth buffer
+        antialias:       true,
+        alpha:           true,
+        powerPreference: 'high-performance',
+        stencil:         false,
+        depth:           false,
       }}
       dpr={[1, 2]}
       style={{ background: 'transparent' }}
     >
       <Suspense fallback={null}>
-        {useRealSplat ? (
-          <RealSplat />
+        {SPLAT_URL && splatData ? (
+          <SplatPointCloud data={splatData} isDark={isDark} uSize={uSize} />
         ) : (
-          <SplatParticles
-            count={getCount()}
-            isDark={theme === 'dark'}
-          />
+          <SplatParticles count={getCount()} isDark={isDark} />
         )}
-        <CameraController mouseRef={mouseRef} clickRef={clickRef} />
+        <CameraController mouseRef={mouseRef} clickRef={clickRef} rRef={cameraRRef} />
       </Suspense>
     </Canvas>
   )
