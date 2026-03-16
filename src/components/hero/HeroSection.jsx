@@ -64,15 +64,15 @@ export default function HeroSection() {
     rafId = requestAnimationFrame(tick)
 
     const handleOrientation = (e) => {
-      if (e.gamma === null && e.beta === null) return  // sensor not available
-      const gamma = e.gamma || 0
-      const beta  = (e.beta  || 0) - 45
+      // Some devices report 0,0 not null when sensor is unavailable — both are fine
+      const gamma = e.gamma ?? 0
+      const beta  = (e.beta  ?? 0) - 45
       gyroTarget.x = Math.max(-1, Math.min(1, gamma / 30))
       gyroTarget.y = Math.max(-1, Math.min(1, beta  / 30))
       gyroActive = true
     }
 
-    // Touch-drag fallback — active when gyro is unavailable or denied
+    // Touch-drag fallback — active when gyro hasn't fired yet
     let touchStart = null
     const handleTouchStart = (e) => {
       const t = e.touches[0]
@@ -80,7 +80,7 @@ export default function HeroSection() {
                      mx: mouseRef.current.x, my: mouseRef.current.y }
     }
     const handleTouchMove = (e) => {
-      if (!touchStart || gyroActive) return  // gyro takes priority
+      if (!touchStart || gyroActive) return
       const dx = (e.touches[0].clientX - touchStart.x) / window.innerWidth
       const dy = (e.touches[0].clientY - touchStart.y) / window.innerHeight
       mouseRef.current.x = Math.max(-1, Math.min(1, touchStart.mx + dx * 2))
@@ -92,17 +92,19 @@ export default function HeroSection() {
     window.addEventListener('touchmove',  handleTouchMove,  { passive: true })
     window.addEventListener('touchend',   handleTouchEnd,   { passive: true })
 
-    // Android — no permission gate needed
-    if (
-      typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission !== 'function'
-    ) {
+    // Android: try deviceorientationabsolute first (Chrome preferred),
+    // fall back to deviceorientation. Both are fine to attach simultaneously —
+    // whichever fires first sets gyroActive = true.
+    const isIOS = typeof DeviceOrientationEvent?.requestPermission === 'function'
+    if (!isIOS && typeof DeviceOrientationEvent !== 'undefined') {
+      window.addEventListener('deviceorientationabsolute', handleOrientation, { passive: true })
       window.addEventListener('deviceorientation', handleOrientation, { passive: true })
     }
-    // iOS: permission is requested via the button rendered in JSX (requestIOSGyro)
+    // iOS: permission requested via "Enable tilt" button in JSX
 
     return () => {
       cancelAnimationFrame(rafId)
+      window.removeEventListener('deviceorientationabsolute', handleOrientation)
       window.removeEventListener('deviceorientation', handleOrientation)
       window.removeEventListener('touchstart', handleTouchStart)
       window.removeEventListener('touchmove',  handleTouchMove)
