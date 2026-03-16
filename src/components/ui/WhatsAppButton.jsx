@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 
 // ── Replace with actual WhatsApp business number (country code + digits) ──
-export const WHATSAPP_NUMBER = '919999999999'
+export const WHATSAPP_NUMBER = '918985621250'
 
 export function buildWaLink(message = '') {
   const encoded = encodeURIComponent(message)
