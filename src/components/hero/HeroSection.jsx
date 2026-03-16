@@ -39,41 +39,85 @@ export default function HeroSection() {
     return () => window.removeEventListener('mousemove', fn)
   }, [reducedMotion])
 
-  /* ── Mobile gyroscope → camera ───────────────────────────────── */
+  /* ── Mobile gyroscope + touch-drag → camera ─────────────────── */
   useEffect(() => {
     if (reducedMotion) return
-    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent)
+    const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
+                     ('ontouchstart' in window)
     if (!isMobile) return
 
+    // Smoothed gyro target — lerped into mouseRef by rAF so we never jitter
+    const GYRO_LERP = 0.05
+    const gyroTarget = { x: 0, y: 0 }
+    let gyroActive = false
+    let rafId = null
+
+    const tick = () => {
+      if (gyroActive) {
+        mouseRef.current.x += (gyroTarget.x - mouseRef.current.x) * GYRO_LERP
+        mouseRef.current.y += (gyroTarget.y - mouseRef.current.y) * GYRO_LERP
+      }
+      rafId = requestAnimationFrame(tick)
+    }
+    rafId = requestAnimationFrame(tick)
+
     const handleOrientation = (e) => {
-      // gamma: left/right tilt (-90 to 90)
-      // beta:  front/back tilt (-180 to 180); subtract 45 for typical viewing angle
       const gamma = e.gamma || 0
       const beta  = (e.beta  || 0) - 45
-      mouseRef.current.x = Math.max(-1, Math.min(1, gamma / 30))
-      mouseRef.current.y = Math.max(-1, Math.min(1, beta  / 30))
+      gyroTarget.x = Math.max(-1, Math.min(1, gamma / 30))
+      gyroTarget.y = Math.max(-1, Math.min(1, beta  / 30))
+      gyroActive = true
     }
 
-    // iOS 13+ requires permission via user gesture
+    // Touch-drag fallback — active when gyro is unavailable or denied
+    let touchStart = null
+    const handleTouchStart = (e) => {
+      const t = e.touches[0]
+      touchStart = { x: t.clientX, y: t.clientY,
+                     mx: mouseRef.current.x, my: mouseRef.current.y }
+    }
+    const handleTouchMove = (e) => {
+      if (!touchStart || gyroActive) return  // gyro takes priority
+      const dx = (e.touches[0].clientX - touchStart.x) / window.innerWidth
+      const dy = (e.touches[0].clientY - touchStart.y) / window.innerHeight
+      mouseRef.current.x = Math.max(-1, Math.min(1, touchStart.mx + dx * 2))
+      mouseRef.current.y = Math.max(-1, Math.min(1, touchStart.my + dy * 2))
+    }
+    const handleTouchEnd = () => { touchStart = null }
+
+    window.addEventListener('touchstart', handleTouchStart, { passive: true })
+    window.addEventListener('touchmove',  handleTouchMove,  { passive: true })
+    window.addEventListener('touchend',   handleTouchEnd,   { passive: true })
+
+    // iOS 13+ requires explicit permission via user gesture
     if (
       typeof DeviceOrientationEvent !== 'undefined' &&
       typeof DeviceOrientationEvent.requestPermission === 'function'
     ) {
+      let permissionRequested = false
       const requestGyro = async () => {
+        if (permissionRequested) return
+        permissionRequested = true
         try {
           const perm = await DeviceOrientationEvent.requestPermission()
           if (perm === 'granted') {
             window.addEventListener('deviceorientation', handleOrientation, { passive: true })
           }
-        } catch (_) { /* permission denied / not supported */ }
+        } catch (_) { /* denied — touch drag handles it */ }
       }
-      // Trigger on first touch anywhere on page
       document.addEventListener('touchstart', requestGyro, { once: true })
-    } else {
+    } else if (typeof DeviceOrientationEvent !== 'undefined') {
+      // Android / non-iOS — no permission gate
       window.addEventListener('deviceorientation', handleOrientation, { passive: true })
     }
 
-    return () => window.removeEventListener('deviceorientation', handleOrientation)
+    return () => {
+      cancelAnimationFrame(rafId)
+      window.removeEventListener('deviceorientation', handleOrientation)
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchmove',  handleTouchMove)
+      window.removeEventListener('touchend',   handleTouchEnd)
+    }
   }, [reducedMotion])
 
   /* ── Hint ─────────────────────────────────────────────────────── */

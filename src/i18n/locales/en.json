@@ -1,7 +1,7 @@
 {
   "brand": {
     "name": "Drishya",
-    "tagline": "See it before you own it",
+    "tagline": "Film it. We build it.",
     "location": "India"
   },
   "nav": {
@@ -14,11 +14,11 @@
     "home": "Home"
   },
   "hero": {
-    "headline": "Real Estate,",
-    "headline2": "Reimagined",
-    "subheadline": "Immersive Tours · Cinematic Videos · Virtual Experiences",
-    "body": "We turn properties into experiences. Before a single visit, your buyer is already in love — every room felt, every detail seen, every corner explored.",
-    "cta_primary": "Explore Our Work",
+    "headline": "Film your flat.",
+    "headline2": "Get a 3D tour back.",
+    "subheadline": "Phone video in · Photorealistic 3D model out · 48 hours",
+    "body": "No photographer. No crew. No special equipment. Walk through your property with your phone — we turn it into a 3D tour your buyers can explore from anywhere in the world.",
+    "cta_primary": "See How It Works",
     "cta_secondary": "View Pricing",
     "scroll_hint": "Scroll to explore",
     "click_hint": "Move to look around · Scroll to continue"
@@ -32,21 +32,21 @@
     "cities_val": "3"
   },
   "services": {
-    "title": "What We Create",
-    "subtitle": "Three ways we make your property unforgettable",
-    "3d_title": "Virtual Tours",
-    "3d_desc": "An immersive digital walkthrough of your property — so buyers can explore every room, every detail, from wherever they are. No visit needed to fall in love.",
-    "3d_feature1": "Photorealistic detail",
-    "3d_feature2": "Explore at your own pace",
-    "3d_feature3": "Share via WhatsApp or website",
-    "vr_title": "Virtual Reality",
-    "vr_desc": "Step inside before you step out. On a phone, a laptop, or a headset — buyers feel the space as if they're already standing in it.",
+    "title": "What We Build",
+    "subtitle": "Send us a phone video. Get a 3D model back.",
+    "3d_title": "3D Property Models",
+    "3d_desc": "Film your flat or villa with your phone and send us the footage. We reconstruct it into a photorealistic 3D model — no photographer visit, no special camera, no delay.",
+    "3d_feature1": "Built from your phone video",
+    "3d_feature2": "Buyers explore every room, on any device",
+    "3d_feature3": "Shareable link, WhatsApp-ready",
+    "vr_title": "VR Walkthroughs",
+    "vr_desc": "The same 3D model, experienced in full immersion. On a phone, a laptop, or a headset — buyers feel the space as if they're already standing in it.",
     "vr_feature1": "Works on any device",
     "vr_feature2": "Your brand, your environment",
     "vr_feature3": "Space maps and room guides",
     "video_title": "Cinematic Videos",
-    "video_desc": "The story your property deserves — golden-hour aerials, sweeping interiors, and a 60-second reel that makes buyers reach for the phone.",
-    "video_feature1": "Aerial and interior filming",
+    "video_desc": "A 60-second reel cut from your 3D model — golden-hour framing, sweeping interiors, formatted for Instagram, YouTube, and WhatsApp.",
+    "video_feature1": "Cut from your existing 3D model",
     "video_feature2": "Instagram, YouTube and WhatsApp formats",
     "video_feature3": "Telugu and English versions"
   },
@@ -70,15 +70,15 @@
   },
   "process": {
     "title": "How It Works",
-    "subtitle": "From booking to delivery in days, not weeks",
-    "step1_title": "We Visit",
-    "step1_desc": "Our team arrives at your property with specialist cameras. We capture every corner, every light, every texture. Most properties take 2–4 hours.",
-    "step2_title": "We Create",
-    "step2_desc": "Our studio processes every detail, transforming the raw capture into a living, breathable digital space — ready within 24–48 hours.",
-    "step3_title": "We Refine",
-    "step3_desc": "We review with you, apply your branding, add space maps and create social media cuts. Your vision, perfected.",
-    "step4_title": "We Deliver",
-    "step4_desc": "You receive a shareable link, embed code and all assets — hosted on our servers, WhatsApp-ready from day one."
+    "subtitle": "Four steps. 48 hours. No visit needed.",
+    "step1_title": "You Film",
+    "step1_desc": "Walk through your property with your phone — any iPhone or Android. A 10-minute handheld walkthrough is all we need. We'll send you a quick filming guide.",
+    "step2_title": "You Send",
+    "step2_desc": "Upload your video to Google Drive or WhatsApp. No account needed. We confirm receipt within 1 hour and begin processing immediately.",
+    "step3_title": "We Build",
+    "step3_desc": "Our 3DGS pipeline reconstructs every frame into a photorealistic 3D model. We add your branding, room labels, and floor layout. Ready in 24–48 hours.",
+    "step4_title": "You Share",
+    "step4_desc": "A shareable link lands in your WhatsApp. Buyers explore your property in full 3D — on any device, from anywhere in the world."
   },
   "pricing": {
     "title": "Transparent Pricing",
@@ -143,24 +143,24 @@
   "faq": {
     "title": "Frequently Asked Questions",
     "subtitle": "Everything you need to know before starting",
-    "q1": "Which types of properties do you work with?",
-    "a1": "We work with all residential and commercial properties — independent houses, villas, apartments, gated communities, commercial plots and under-construction projects.",
+    "q1": "Do I need a special camera or equipment?",
+    "a1": "No. Any modern smartphone — iPhone or Android — is all you need. We'll send you a simple filming guide. Most properties take 10–15 minutes to film.",
     "q2": "How long does it take to deliver?",
-    "a2": "Standard delivery is 3–5 business days after the capture visit. Our express 48-hour service is available for urgent needs.",
-    "q3": "Do buyers need a VR headset?",
-    "a3": "No. The virtual experience works in any modern browser on mobile or desktop. A VR headset gives a more immersive experience but is entirely optional.",
-    "q4": "Can I share the virtual tour on WhatsApp?",
-    "a4": "Yes — every project includes a short, mobile-optimised link you can share directly on WhatsApp, social media, or embed on your website.",
-    "q5": "Do you cover areas outside Guntur?",
-    "a5": "Currently we serve select cities across India. We're expanding rapidly — contact us to check coverage in your city.",
-    "q6": "Is the pricing negotiable for multiple properties?",
-    "a6": "Yes. We offer tiered discounts for 3+ properties and monthly retainer contracts. Contact us to discuss a custom arrangement.",
-    "q7": "What if I'm not satisfied with the output?",
-    "a7": "The Darshana and Sampurna packages include unlimited revisions. Sparsha includes 1 revision. We work until you're happy."
+    "a2": "Once we receive your video, the 3D model is ready in 24–48 hours. Express same-day delivery is available for urgent listings.",
+    "q3": "Which types of properties do you work with?",
+    "a3": "Any residential or commercial property — independent houses, villas, apartments, gated communities, commercial plots, and under-construction projects.",
+    "q4": "Do buyers need a VR headset?",
+    "a4": "No. The 3D tour works in any browser on mobile or desktop. A VR headset gives a more immersive experience but is entirely optional.",
+    "q5": "Can I share the 3D tour on WhatsApp?",
+    "a5": "Yes — every project includes a short, mobile-optimised link you can share directly on WhatsApp, social media, or embed on your website.",
+    "q6": "Do you cover areas outside Guntur?",
+    "a6": "Since you do the filming, we can work with any property in India. No visit needed from our side.",
+    "q7": "Is the pricing negotiable for multiple properties?",
+    "a7": "Yes. We offer tiered discounts for 3+ properties and monthly retainer contracts. Contact us to discuss a custom arrangement."
   },
   "contact": {
     "title": "Start a Project",
-    "subtitle": "Tell us about your property. We'll respond within 2 hours on WhatsApp.",
+    "subtitle": "Tell us about your property. We send you a filming guide. You film. We build. Done.",
     "name_label": "Your Name",
     "name_placeholder": "e.g. Suresh Reddy",
     "phone_label": "WhatsApp Number",
@@ -182,7 +182,7 @@
     "direct_number": "+91 XXXXX XXXXX"
   },
   "footer": {
-    "tagline": "Immersive real estate experiences across India.",
+    "tagline": "Phone video in. Photorealistic 3D tour out. Anywhere in India.",
     "services_title": "Services",
     "company_title": "Company",
     "legal_title": "Legal",
