@@ -7,4 +7,5 @@ dist/
 splat/*.ply
 splat/*.splat
 splat/*.ksplat
-public/splat/
+public/splat/iskcon-temple.splat
+public/splat/krishna-chariot.splat
