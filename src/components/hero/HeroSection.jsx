@@ -23,8 +23,11 @@ export default function HeroSection() {
   const mouseRef  = useRef({ x: 0, y: 0 })
   const clickRef  = useRef({ theta: 0 })
 
-  const [showHint, setShowHint] = useState(false)
-  const [webGL]   = useState(() => hasWebGL())
+  const [showHint, setShowHint]     = useState(false)
+  const [webGL]                     = useState(() => hasWebGL())
+  const [gyroGranted, setGyroGranted] = useState(false)
+  const isIOSGyro = typeof DeviceOrientationEvent !== 'undefined' &&
+                    typeof DeviceOrientationEvent.requestPermission === 'function'
 
   /* ── Desktop mouse → camera ──────────────────────────────────── */
   useEffect(() => {
@@ -41,7 +44,6 @@ export default function HeroSection() {
 
   /* ── Mobile gyroscope + touch-drag → camera ─────────────────── */
   useEffect(() => {
-    if (reducedMotion) return
     const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent) ||
                      ('ontouchstart' in window)
     if (!isMobile) return
@@ -62,6 +64,7 @@ export default function HeroSection() {
     rafId = requestAnimationFrame(tick)
 
     const handleOrientation = (e) => {
+      if (e.gamma === null && e.beta === null) return  // sensor not available
       const gamma = e.gamma || 0
       const beta  = (e.beta  || 0) - 45
       gyroTarget.x = Math.max(-1, Math.min(1, gamma / 30))
@@ -89,27 +92,14 @@ export default function HeroSection() {
     window.addEventListener('touchmove',  handleTouchMove,  { passive: true })
     window.addEventListener('touchend',   handleTouchEnd,   { passive: true })
 
-    // iOS 13+ requires explicit permission via user gesture
+    // Android — no permission gate needed
     if (
       typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function'
+      typeof DeviceOrientationEvent.requestPermission !== 'function'
     ) {
-      let permissionRequested = false
-      const requestGyro = async () => {
-        if (permissionRequested) return
-        permissionRequested = true
-        try {
-          const perm = await DeviceOrientationEvent.requestPermission()
-          if (perm === 'granted') {
-            window.addEventListener('deviceorientation', handleOrientation, { passive: true })
-          }
-        } catch (_) { /* denied — touch drag handles it */ }
-      }
-      document.addEventListener('touchstart', requestGyro, { once: true })
-    } else if (typeof DeviceOrientationEvent !== 'undefined') {
-      // Android / non-iOS — no permission gate
       window.addEventListener('deviceorientation', handleOrientation, { passive: true })
     }
+    // iOS: permission is requested via the button rendered in JSX (requestIOSGyro)
 
     return () => {
       cancelAnimationFrame(rafId)
@@ -118,12 +108,33 @@ export default function HeroSection() {
       window.removeEventListener('touchmove',  handleTouchMove)
       window.removeEventListener('touchend',   handleTouchEnd)
     }
-  }, [reducedMotion])
+  }, [])
 
   /* ── Hint ─────────────────────────────────────────────────────── */
   useEffect(() => {
     const id = setTimeout(() => setShowHint(true), 3000)
     return () => clearTimeout(id)
+  }, [])
+
+  /* ── iOS gyro permission (called from button tap) ────────────── */
+  const requestIOSGyro = useCallback(async () => {
+    try {
+      const perm = await DeviceOrientationEvent.requestPermission()
+      if (perm === 'granted') {
+        const handleOrientation = (e) => {
+          if (e.gamma === null && e.beta === null) return
+          const gamma = e.gamma || 0
+          const beta  = (e.beta  || 0) - 45
+          // mouseRef is shared — write directly (rAF loop in gyro effect handles lerp)
+          mouseRef.current.x = Math.max(-1, Math.min(1, gamma / 30))
+          mouseRef.current.y = Math.max(-1, Math.min(1, beta  / 30))
+        }
+        window.addEventListener('deviceorientation', handleOrientation, { passive: true })
+        setGyroGranted(true)
+      }
+    } catch (_) {
+      setGyroGranted(true) // hide button even if denied
+    }
   }, [])
 
   /* ── Click: 3-direction snap (independent of scroll) ─────────── */
@@ -169,10 +180,10 @@ export default function HeroSection() {
         <div className="absolute inset-0" style={{ background: 'var(--hero-bg)' }} />
       )}
 
-      {/* Vignette — darker edges, bright centre */}
+      {/* Vignette — darker edges + subtle centre scrim for text legibility */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 45%, transparent 30%, var(--bg) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 40%, var(--bg) 100%)' }}
       />
 
       {/* Text overlay */}
@@ -187,7 +198,7 @@ export default function HeroSection() {
               fontSize: 'clamp(5rem, 14vw, 11rem)',
               lineHeight: 0.95,
               letterSpacing: '-0.02em',
-              textShadow: '0 0 80px rgba(255,255,255,0.06)',
+              textShadow: '0 4px 32px rgba(0,0,0,0.8), 0 0 80px rgba(0,0,0,0.6)',
             }}
           >
             Drishya
@@ -196,8 +207,11 @@ export default function HeroSection() {
           {/* Italic Telugu name */}
           <motion.p
             {...fade(2)}
-            className="font-display font-light italic text-white/30 mt-1"
-            style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)' }}
+            className="font-display font-light italic text-white/60 mt-1"
+            style={{
+              fontSize: 'clamp(1.4rem, 3vw, 2.2rem)',
+              textShadow: '0 2px 12px rgba(0,0,0,0.7)',
+            }}
           >
             దృశ్య
           </motion.p>
@@ -205,7 +219,8 @@ export default function HeroSection() {
           {/* Tagline */}
           <motion.p
             {...fade(3)}
-            className="label text-white/35 mt-8 tracking-widest"
+            className="label text-white/70 mt-8 tracking-widest"
+            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
           >
             {t('brand.tagline')}
           </motion.p>
@@ -242,6 +257,27 @@ export default function HeroSection() {
       >
         {t('hero.click_hint')}
       </motion.p>
+
+      {/* iOS gyro permission button */}
+      {isIOSGyro && !gyroGranted && (
+        <button
+          onClick={requestIOSGyro}
+          className="absolute top-5 right-5 pointer-events-auto"
+          style={{
+            background: 'rgba(255,255,255,0.1)',
+            border: '1px solid rgba(255,255,255,0.2)',
+            borderRadius: 6,
+            padding: '6px 12px',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: 11,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            backdropFilter: 'blur(8px)',
+          }}
+        >
+          Enable tilt
+        </button>
+      )}
 
       {/* Viewer tuning panel */}
       {webGL && !reducedMotion && <ViewerControls />}
