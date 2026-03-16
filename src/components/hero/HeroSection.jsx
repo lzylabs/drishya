@@ -182,15 +182,23 @@ export default function HeroSection() {
         <div className="absolute inset-0" style={{ background: 'var(--hero-bg)' }} />
       )}
 
-      {/* Vignette — darker edges + subtle centre scrim for text legibility */}
+      {/* Vignette */}
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.45) 0%, rgba(0,0,0,0.2) 40%, var(--bg) 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at 50% 45%, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, var(--bg) 100%)' }}
       />
 
       {/* Text overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pointer-events-none">
-        <div className="text-center">
+        <div
+          className="text-center"
+          style={{
+            background: 'rgba(0,0,0,0.25)',
+            backdropFilter: 'blur(2px)',
+            borderRadius: 16,
+            padding: '2rem 2.5rem',
+          }}
+        >
 
           {/* Brand name in Cormorant */}
           <motion.h1
@@ -200,7 +208,6 @@ export default function HeroSection() {
               fontSize: 'clamp(5rem, 14vw, 11rem)',
               lineHeight: 0.95,
               letterSpacing: '-0.02em',
-              textShadow: '0 4px 32px rgba(0,0,0,0.8), 0 0 80px rgba(0,0,0,0.6)',
             }}
           >
             Drishya
@@ -209,11 +216,8 @@ export default function HeroSection() {
           {/* Italic Telugu name */}
           <motion.p
             {...fade(2)}
-            className="font-display font-light italic text-white/60 mt-1"
-            style={{
-              fontSize: 'clamp(1.4rem, 3vw, 2.2rem)',
-              textShadow: '0 2px 12px rgba(0,0,0,0.7)',
-            }}
+            className="font-display font-light italic text-white/50 mt-1"
+            style={{ fontSize: 'clamp(1.4rem, 3vw, 2.2rem)' }}
           >
             దృశ్య
           </motion.p>
@@ -222,7 +226,6 @@ export default function HeroSection() {
           <motion.p
             {...fade(3)}
             className="label text-white/70 mt-8 tracking-widest"
-            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
           >
             {t('brand.tagline')}
           </motion.p>
