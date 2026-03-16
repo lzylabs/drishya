@@ -162,3 +162,31 @@ h4, h5, h6 {
 .input:focus { outline: none; border-bottom-color: var(--text); }
 .input::placeholder { color: var(--text-3); }
 .input option { background: var(--bg-2); color: var(--text); }
+
+/* ── Viewer controls range slider ─────────────────────────────────────── */
+.viewer-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.viewer-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+  transition: transform 0.15s;
+}
+.viewer-slider::-webkit-slider-thumb:hover { transform: scale(1.3); }
+.viewer-slider::-moz-range-thumb {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  cursor: pointer;
+}

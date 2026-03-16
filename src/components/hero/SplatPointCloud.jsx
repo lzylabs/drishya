@@ -1,6 +1,7 @@
 import { useRef, useMemo } from 'react'
 import { useFrame } from '@react-three/fiber'
 import * as THREE from 'three'
+import { config } from './viewerConfig.js'
 
 /* ─── Shaders ────────────────────────────────────────────────────────────── */
 
@@ -71,15 +72,15 @@ export default function SplatPointCloud({ data, isDark, uSize = 20 }) {
     const mat = new THREE.ShaderMaterial({
       vertexShader,
       fragmentShader,
-      blending:    THREE.AdditiveBlending,
-      depthWrite:  false,
-      depthTest:   false,
+      blending:    THREE.NormalBlending,   /* DIAGNOSTIC: real colours, no blowout */
+      depthWrite:  true,
+      depthTest:   true,
       transparent: true,
       uniforms: {
         uTime:       { value: 0 },
         uSize:       { value: uSize },
         uPixelRatio: { value: Math.min(window.devicePixelRatio, 2) },
-        uBrightness: { value: isDark ? 0.12 : 0.07 },  /* LOW — prevents blowout */
+        uBrightness: { value: 1.0 },   /* full brightness for diagnosis */
       },
     })
 
@@ -89,7 +90,8 @@ export default function SplatPointCloud({ data, isDark, uSize = 20 }) {
   useFrame((_, delta) => {
     timeRef.current += delta * 0.3
     material.uniforms.uTime.value       = timeRef.current
-    material.uniforms.uBrightness.value = isDark ? 0.12 : 0.07
+    material.uniforms.uSize.value       = config.uSize
+    material.uniforms.uBrightness.value = config.brightness
   })
 
   return <points geometry={geometry} material={material} />

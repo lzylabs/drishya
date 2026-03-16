@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { gsap } from 'gsap'
 import { buildWaLink } from '../ui/WhatsAppButton.jsx'
 import { useReducedMotion } from '../../hooks/useReducedMotion.js'
+import ViewerControls from './ViewerControls.jsx'
 
 const HeroScene = lazy(() => import('./HeroScene.jsx'))
 
@@ -197,6 +198,9 @@ export default function HeroSection() {
       >
         {t('hero.click_hint')}
       </motion.p>
+
+      {/* Viewer tuning panel */}
+      {webGL && !reducedMotion && <ViewerControls />}
 
       {/* Scroll cue */}
       <div className="absolute bottom-7 left-1/2 -translate-x-1/2 pointer-events-none">

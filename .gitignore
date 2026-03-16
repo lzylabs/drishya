@@ -7,3 +7,4 @@ dist/
 splat/*.ply
 splat/*.splat
 splat/*.ksplat
+public/splat/
